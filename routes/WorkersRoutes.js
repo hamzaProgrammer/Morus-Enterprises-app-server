@@ -8,8 +8,24 @@ const {
     getAllActiveWorkers,
     getAllOfflineWorkers,
     addDetailsOfWorker,
-    getAllWorkersOfSite
+    getAllWorkersOfSite,
+    getWorkerPic,
+    updateWorkerPic,
+    updateWorkerProfile
 } = require('../controllers/WorkersController')
+const multer = require("multer")
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './siteAdvancePics/')
+        //cb(null, '../products')
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'image-' + Date.now() + file.originalname)
+    }
+})
+const upload = multer({
+    storage: storage,
+});
 
 
 // Sign Up worker
@@ -20,6 +36,15 @@ router.get('/api/workers/getAllWorkersOfAdmin/:site', getAllWorkers)
 
 // getting single worker of an admin
 router.get('/api/workers/getSingleWorkerOfAdmin/:id/:site', getSingleWorker)
+
+// getting single worker profile pic of an admin
+router.get('/api/workers/getProfilePic/:id', getWorkerPic)
+
+// updating worker profile pic
+router.put('/api/workers/updatePic/:id', upload.single("profilePic") ,  updateWorkerPic)
+
+// updating worker profile info
+router.put('/api/workers/updateInfo/:id', updateWorkerProfile)
 
 // changing status of single worker
 router.put('/api/workers/updateStatusOfWorker/:id/:owner', changeActiveStatus)

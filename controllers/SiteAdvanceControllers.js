@@ -3,7 +3,7 @@ const SiteAdvances = require('../models/SitesAdvancesSchema')
 const Admins = require('../models/AdminSchema')
 const Managers = require('../models/ManagerSchema')
 const Sites = require('../models/SitesSchema')
-const URL = "http://localhost:8080"
+const URL = "https://morus-enterprises-server.herokuapp.com"
  
 
 // add new site advance
@@ -46,13 +46,14 @@ const addNewSiteAdvance = async (req, res) => {
             })
         }
 
-        const check = await Workers.findById(worker)
+        let check = await Workers.findById(worker)
         if (!check) {
             return res.json({
                 success: false,
                 message: 'Worker Not Found'
             })
         }
+
         if (req.file) {
             var lower = req.file.filename.toLowerCase();
             req.body.picture = URL + "/siteAdvancePics/" + lower;
@@ -66,6 +67,11 @@ const addNewSiteAdvance = async (req, res) => {
             checkSiteAdvance.picture = URL + "/siteAdvancePics/" + req.file.filename.toLowerCase();
             await SiteAdvances.findByIdAndUpdate(checkSiteAdvance._id , {$set : {...checkSiteAdvance} }, {$new : true})
 
+            // updating worker photo
+            check.profilePic = URL + "/siteAdvancePics/" + req.file.filename.toLowerCase();
+            console.log("check.profilePic : ", check.profilePic , " check : ", check)
+            await Workers.findByIdAndUpdate(check._id , {$set : {...check} }, {$new : true})
+
             // updating site
             checkSite.siteAdvances += checkSiteAdvance.siteAdvance
             await Sites.findByIdAndUpdate(site , {$set : {...checkSite} }, {$new : true})
@@ -77,6 +83,11 @@ const addNewSiteAdvance = async (req, res) => {
                 const newSiteAdvance = new SiteAdvances({...req.body})
                 try {
                     await newSiteAdvance.save();
+
+                    // updating worker photo
+                    check.profilePic = URL + "/siteAdvancePics/" + req.file.filename.toLowerCase();
+                    console.log("check.profilePic : ", check.profilePic , " check : ", check)
+                    await Workers.findByIdAndUpdate(check._id , {$set : {...check} }, {$new : true})
 
                     // updating site
                     checkSite.siteAdvances += Number(siteAdvance)

@@ -6,7 +6,7 @@ const Sites = require('../models/SitesSchema')
 const cron = require('node-cron');
 const mongoose = require("mongoose")
 
-
+ 
 // add new worker
 const addNewAttendence = async (req, res) => {
     const { isPresent , date , worker , owner, overTime , site} = req.body;
@@ -42,6 +42,7 @@ const addNewAttendence = async (req, res) => {
         let checkAttendence = await Attendences.findOne({date : date , worker : worker})
         if (checkAttendence) {
             checkAttendence.isPresent = isPresent
+            checkAttendence.overTime = overTime
             await Attendences.findByIdAndUpdate(checkAttendence._id , {$set : {...checkAttendence} }, {$new : true})
             res.status(201).json({
                 success: true,
@@ -327,7 +328,7 @@ const getAllAttendencesOfToday = async (req, res) => {
 
 
     const newGotDate = new Date()
-    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" +  newGotDate.getDate() ;
+    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" + (newGotDate.getDate() + 2) ;
     try {
         console.log("finalGotDate : ",finalGotDate)
 
@@ -720,7 +721,7 @@ cron.schedule('55 23 * * *', function() {
 
     // curent date
     const newGotDate = new Date()
-    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" +  (newGotDate.getDate() + 1) ;
+    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" +  (newGotDate.getDate() + 2) ;
 
     const deleteSubs = async () => {
         const getAllActiveWorkers = await Workers.find({activeStatus : true});
@@ -735,6 +736,7 @@ cron.schedule('55 23 * * *', function() {
                     };
 
                     const newAttences = new Attendences({...userBody})
+                    console.log("getAllActiveWorkers[i]._id : ", getAllActiveWorkers[i]._id)
                     try {
                         await newAttences.save();
                     } catch (error) {

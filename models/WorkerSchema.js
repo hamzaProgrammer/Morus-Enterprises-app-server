@@ -60,6 +60,10 @@ const WorkersSchema = new mongoose.Schema({
         ref : 'moruenterprisessites',
         required: true,
     },
+    profilePic: {
+        type: String,
+        default : ''
+    },
     activeStatus: {
         type: Boolean,
         default : 'true'
