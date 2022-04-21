@@ -328,7 +328,7 @@ const getAllAttendencesOfToday = async (req, res) => {
 
 
     const newGotDate = new Date()
-    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" + (newGotDate.getDate() + 2) ;
+    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" + newGotDate.getDate();
     try {
         console.log("finalGotDate : ",finalGotDate)
 
@@ -337,7 +337,6 @@ const getAllAttendencesOfToday = async (req, res) => {
                 $match : {
                     date:  finalGotDate,
                     site:  mongoose.Types.ObjectId(site),
-                    owner:  mongoose.Types.ObjectId(owner)
                 },
             },
             {
@@ -353,7 +352,7 @@ const getAllAttendencesOfToday = async (req, res) => {
             },
             {
                 $project: {
-                    _id: {
+                    workerData: {
                         Att_Id : "$_id",
                         Att_Date : "$date",
                         Att_Present : "$isPresent",
@@ -365,13 +364,11 @@ const getAllAttendencesOfToday = async (req, res) => {
             },
             {
                 $group: {
+                    allWorkersAtt: {
+                        $push: "$workerData"
+                    },
                     _id: {
-                        Att_Id: "$_id.Att_Id",
-                        Att_Date: "$_id.Att_Date",
-                        Att_Present: "$_id.Att_Present",
-                        Att_OverTime: "$_id.Att_OverTime",
-                        WokerName: "$_id.WokerName",
-                        WokerId: "$_id.WokerId",
+                        TodayDateIs : "$workerData.Att_Date"
                     },
                 }
             }
@@ -721,7 +718,7 @@ cron.schedule('55 23 * * *', function() {
 
     // curent date
     const newGotDate = new Date()
-    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" +  (newGotDate.getDate() + 2) ;
+    let finalGotDate = newGotDate.getFullYear() + "-" + (newGotDate.getMonth() + 1) + "-" +  newGotDate.getDate() ;
 
     const deleteSubs = async () => {
         const getAllActiveWorkers = await Workers.find({activeStatus : true});
@@ -736,7 +733,7 @@ cron.schedule('55 23 * * *', function() {
                     };
 
                     const newAttences = new Attendences({...userBody})
-                    console.log("getAllActiveWorkers[i]._id : ", getAllActiveWorkers[i]._id)
+                    console.log("getAllActiveWorkers[i]._id : ", getAllActiveWorkers[i].owner , " getAllActiveWorkers[i].site " , getAllActiveWorkers[i].site)
                     try {
                         await newAttences.save();
                     } catch (error) {

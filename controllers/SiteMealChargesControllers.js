@@ -209,7 +209,7 @@ const getSitePaymentHistory = async (req, res) => {
     }
 
     newGotDate.setDate(newDiff)
-    
+
     let finalGotDate = gotYear + "-" + gotMonth + "-" + ( newDiff ) ; // previous adate
     console.log("User Date ", userDate , " crnt date : ",finalGotDate )
     let message = `Record shown is from  ${finalGotDate} to ${userDate} and having difference of 7 Days.`;
@@ -238,18 +238,34 @@ const getSitePaymentHistory = async (req, res) => {
 
         const check = await Expenses.find({
                 site : id,
-                date: {
-                    $gte: finalGotDate,
-                    $lte: userDate
-                },
+                $and : [
+                    {
+                        date: {
+                            $gte: finalGotDate,
+                        }
+                    },
+                    {
+                        date: {
+                            $lte: userDate
+                        },
+                    }
+                ]
             } , {totalExpenses : 1 , _id : 0 });
         
          const checkCashGiven = await CashRegisters.findOne({
                 site : id,
-                date: {
-                    $gte: finalGotDate,
-                    $lte: userDate
-                },
+                $and : [
+                    {
+                        date: {
+                            $gte: finalGotDate,
+                        }
+                    },
+                    {
+                        date: {
+                            $lte: userDate
+                        },
+                    }
+                ]
             } , {totalCashGiven : 1 , _id : 0 });
 
         if (!checkCashGiven) {

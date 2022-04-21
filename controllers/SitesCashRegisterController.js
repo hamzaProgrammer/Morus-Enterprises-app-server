@@ -77,9 +77,9 @@ const addCashToSite = async (req, res) => {
 // update cash to site
 const updateCashOfSite = async (req, res) => {
     const {id,owner} = req.params;
-    const {amount} = req.body;
+    const {amount , date} = req.body;
 
-    if (!id ||!owner || !amount) {
+    if (!id ||!owner || !amount || !date) {
         return res.json({
             success: false,
             message: "Please fill All required credentials"
@@ -104,6 +104,7 @@ const updateCashOfSite = async (req, res) => {
                 check.totalCashGiven -= Number(check.cashGiven);
                 check.cashGiven = Number(amount);
                 check.totalCashGiven += Number(amount);
+                check.date = date;
                 await CashRegisters.findByIdAndUpdate(id , {$set : {...check}} , {new : true})
 
                 res.status(201).json({
