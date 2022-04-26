@@ -125,6 +125,8 @@ const updateCashOfSite = async (req, res) => {
 // get  history Cash Given to any shop
 const getHistoryOfCashGiven = async (req, res) => {
     const {id,owner} = req.params;
+    const cDate = new Date();
+    const finalDate = cDate.getFullYear() + "-" + (cDate.getMonth() + 1) + "-" + 1;
 
     if (!id ||!owner ) {
         return res.json({
@@ -140,14 +142,14 @@ const getHistoryOfCashGiven = async (req, res) => {
             })
         }
 
-        const check = await CashRegisters.find({site : id } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalCashGiven : 0 })
+        const check = await CashRegisters.find({site : id , date : {$gte :finalDate } } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalCashGiven : 0 })
         if (check.length < 1) {
             return res.json({
                 success: false,
                 message: 'No Cash Given History Found'
             })
         } else {
-                const totalCashGiven = await CashRegisters.find({site : id } , {totalCashGiven : 1 , _id : 0 })
+                const totalCashGiven = await CashRegisters.find({site : id, date : {$gte :finalDate } } , {totalCashGiven : 1 , _id : 0 })
                 let totalSum = 0;
                 for (let i = 0 ; i !== totalCashGiven.length ; i++ ){
                     totalSum += totalCashGiven[i].totalCashGiven;
