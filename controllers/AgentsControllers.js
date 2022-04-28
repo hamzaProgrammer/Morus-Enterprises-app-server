@@ -2,6 +2,8 @@ const Agents = require('../models/AgentsSchema')
 const Admins = require('../models/AdminSchema')
 const Workers = require('../models/WorkerSchema')
 const Sites = require('../models/SitesSchema')
+const AgentRegister = require('../models/AgentExpenseRegister')
+const mongoose = require("mongoose")
 
 
 
@@ -75,17 +77,43 @@ const getSingleSite = async (req, res) => {
             })
         } else {
                 let balance = check.cashGiven - check.expenses;
+                const AllExpenses = await AgentRegister.aggregate([
+                    {
+                        $match : {
+                            agent: mongoose.Types.ObjectId(id),
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: 'moruenterprisesworkers',
+                            localField: 'worker',
+                            foreignField: '_id',
+                            as: 'worker'
+                        },
+                    },
+                    {
+                        $unwind: "$worker"
+                    },
+                    {
+                        $project: {
+                                WorkerName : "$worker.name",
+                                Amount : "$amount",
+                                Date : "$createdAt"
+                            },
+                    }
+                ])
                 try {
-                    res.status(201).json({
+                    return res.status(201).json({
                         success: true,
                         CashGiven : check.cashGiven,
                         Expenses : check.expenses,
                         Balance : balance,
-                        Name : check.name
+                        Name : check.name,
+                        AllExpenses : AllExpenses
                     })
                 } catch (error) {
                     console.log("Error in getSingleSite and error is : ", error)
-                    res.status(201).json({
+                    return res.status(201).json({
                         success: false,
                         error : "Could Not Perform Action"
                     })

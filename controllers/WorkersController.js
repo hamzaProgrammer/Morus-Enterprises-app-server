@@ -3,9 +3,8 @@ const Admins = require('../models/AdminSchema')
 const Sites = require('../models/SitesSchema')
 const Agents = require('../models/AgentsSchema')
 const Attendences = require('../models/AttendenceSchema')
+const AgentRegister = require('../models/AgentExpenseRegister')
 const URL = "http://localhost:8080"
- 
-
 
 
 // add new worker
@@ -17,6 +16,9 @@ const addNewWorker = async (req, res) => {
             message: "Please fill All required credentials"
         });
     } else {
+        const cDate = new Date();
+        const final = cDate.getFullYear() + "-" + (cDate.getMonth() + 1) + "-" + cDate.getDate();
+
         const checkSite = await Sites.findById(site);
         if(!checkSite){
             return res.json({
@@ -55,7 +57,7 @@ const addNewWorker = async (req, res) => {
                     let newlyWorker = await newWorker.save();
 
                     checkAgent.expenses += Number(homeAdvance);
-                    let newAgent = await Agents.findByIdAndUpdate(agent , {$set : {...checkAgent}} , {new : true})
+                    await Agents.findByIdAndUpdate(agent , {$set : {...checkAgent}} , {new : true})
 
                     //  marking worker's attendence
                     // got date
@@ -72,7 +74,18 @@ const addNewWorker = async (req, res) => {
                     const newAttences = new Attendences({...myBody});
 
                     let ww = await newAttences.save();
-                    console.log("ww : ", ww)
+
+                    // creating new record for agent expenses record
+                    let agentReg = {
+                        worker : newlyWorker._id.toString(),
+                        agent: agent,
+                        amount : homeAdvance,
+                        date : newlyWorker.createdAt,
+                    }
+                    const newAgenReg = new AgentRegister({...agentReg});
+
+                    let agg = await newAgenReg.save();
+                    console.log("agg : ", agg)
 
                     res.status(201).json({
                         success: true,
@@ -482,7 +495,7 @@ const getAllOfflineWorkers = async (req, res) => {
 // adding details of single worker
 const addDetailsOfWorker = async (req, res) => {
     const {id,site} = req.params;
-    const {amt , agentId} = req.body
+    const {amt , agentId , date} = req.body
     if (!id ||!site) {
         return res.json({
             success: false,
@@ -505,22 +518,36 @@ const addDetailsOfWorker = async (req, res) => {
             })
         }
 
-        
         let check = await Workers.findOne({
             _id : id , site : site
         })
+
         if (!check) {
             return res.json({
                 success: false,
                 message: 'Worker Not Found'
             })
         } else {
+            let getRec = await AgentRegister.findOne({ agent : agentId  , worker : id , date : {$eq : check.createdAt} } );
+            console.log("getRec : ",getRec)
+            if(!getRec){
+                return res.status(201).json({
+                    success: false,
+                    message : "Agent Record Register Not Found"
+                })
+            }
+
             checkAgent.expenses += Number(amt);
             await Agents.findByIdAndUpdate(agentId , {$set : {...checkAgent}} , {new : true})
                 try {
                     check.homeAdvance += Number(amt)
                     await Workers.findByIdAndUpdate(id , {$set : {...check}} , {new : true})
-                    res.status(201).json({
+
+                    // updating agent record register
+                    getRec.amount = amt;
+                    await AgentRegister.findByIdAndUpdate(getRec._id , {$set : {...getRec}} , {new : true})
+
+                    return res.status(201).json({
                         success: true,
                         message : "Amount Added SuccessFully"
                     })

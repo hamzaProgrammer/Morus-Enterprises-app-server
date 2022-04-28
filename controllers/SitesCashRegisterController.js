@@ -125,8 +125,18 @@ const updateCashOfSite = async (req, res) => {
 // get  history Cash Given to any shop
 const getHistoryOfCashGiven = async (req, res) => {
     const {id,owner} = req.params;
+    const {month} = req.body;
     const cDate = new Date();
-    const finalDate = cDate.getFullYear() + "-" + (cDate.getMonth() + 1) + "-" + 1;
+    let endDate = "";
+    const finalDate = cDate.getFullYear() + "-" + month + "-" + 1;
+    if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 31;
+    }else if(month === 2 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 28;
+    }else if(month === 4 || month === 4 || month === 6 || month === 9 || month === 11 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 30;
+    }
+
 
     if (!id ||!owner ) {
         return res.json({
@@ -142,14 +152,14 @@ const getHistoryOfCashGiven = async (req, res) => {
             })
         }
 
-        const check = await CashRegisters.find({site : id , date : {$gte :finalDate } } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalCashGiven : 0 })
+        const check = await CashRegisters.find({site : id , date : {$gte :finalDate , $lte : endDate } } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalCashGiven : 0 })
         if (check.length < 1) {
             return res.json({
                 success: false,
                 message: 'No Cash Given History Found'
             })
         } else {
-                const totalCashGiven = await CashRegisters.find({site : id, date : {$gte :finalDate } } , {totalCashGiven : 1 , _id : 0 })
+                const totalCashGiven = await CashRegisters.find({site : id, date : {$gte :finalDate , $lte : endDate } } , {totalCashGiven : 1 , _id : 0 })
                 let totalSum = 0;
                 for (let i = 0 ; i !== totalCashGiven.length ; i++ ){
                     totalSum += totalCashGiven[i].totalCashGiven;
@@ -158,7 +168,8 @@ const getHistoryOfCashGiven = async (req, res) => {
                 res.status(201).json({
                     success: true,
                     CashGivenHistory : check,
-                    TotalCashGiven : totalSum
+                    TotalCashGiven : totalSum,
+                    message : `Record Shown from ${finalDate} to ${endDate}.`
                 })
             } catch (error) {
                 console.log("Error in getHistoryOfCashGiven and error is : ", error)
@@ -174,6 +185,17 @@ const getHistoryOfCashGiven = async (req, res) => {
 // get  history Cash Given to any shop
 const getHistoryOfCashGivenByManager = async (req, res) => {
     const {id,manager } = req.params;
+    const {month} = req.body;
+    const cDate = new Date();
+    let endDate = "";
+    const finalDate = cDate.getFullYear() + "-" + month + "-" + 1;
+    if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 31;
+    }else if(month === 2 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 28;
+    }else if(month === 4 || month === 4 || month === 6 || month === 9 || month === 11 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 30;
+    }
 
     if (!id ||!manager) {
         return res.json({
@@ -197,19 +219,20 @@ const getHistoryOfCashGivenByManager = async (req, res) => {
             })
         }
 
-        const check = await CashRegisters.find({site : id } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalCashGiven : 0 })
+        const check = await CashRegisters.find({site : id, date : {$gte :finalDate , $lte : endDate } } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalCashGiven : 0 })
         if (check.length < 1) {
             return res.json({
                 success: false,
                 message: 'No Cash Given History Found'
             })
         } else {
-                const totalCashGiven = await CashRegisters.find({site : id } , {totalCashGiven : 1 , _id : 0 })
+                const totalCashGiven = await CashRegisters.find({site : id , date : {$gte :finalDate , $lte : endDate } } , {totalCashGiven : 1 , _id : 0 })
             try {
                 res.status(201).json({
                     success: true,
                     CashGivenHistory : check,
-                    TotalCashGiven : totalCashGiven
+                    TotalCashGiven : totalCashGiven,
+                    message : `Record Shown from ${finalDate} to ${endDate}.`
                 })
             } catch (error) {
                 console.log("Error in getHistoryOfCashGiven and error is : ", error)

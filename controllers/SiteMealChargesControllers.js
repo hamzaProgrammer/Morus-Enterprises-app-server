@@ -126,10 +126,17 @@ const updateExpenseOfSite = async (req, res) => {
 // get  history site meal charges Given to any shop
 const getHistoryOfMealChargesGiven = async (req, res) => {
     const {id} = req.params;
-
+    const {month} = req.body;
     const cDate = new Date();
-    const finalDate = cDate.getFullYear() + "-" + (cDate.getMonth() + 1) + "-" + 1;
-    console.log("finalDate : ", finalDate)
+    let endDate = "";
+    const finalDate = cDate.getFullYear() + "-" + month + "-" + 1;
+    if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 31;
+    }else if(month === 2 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 28;
+    }else if(month === 4 || month === 4 || month === 6 || month === 9 || month === 11 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 30;
+    }
 
     if (!id ) {
         return res.json({
@@ -146,14 +153,14 @@ const getHistoryOfMealChargesGiven = async (req, res) => {
             })
         }
 
-        const check = await Expenses.find({site : id, date : {$gte : finalDate} }, {createdAt : 0 , updatedAt : 0 , __v : 0 , totalExpenses : 0 , site : 0 })
+        const check = await Expenses.find({site : id, date : {$gte : finalDate , $lte : endDate} }, {createdAt : 0 , updatedAt : 0 , __v : 0 , totalExpenses : 0 , site : 0 })
         if (check.length < 1) {
             return res.json({
                 success: false,
                 message: 'No Expenses Given History Found'
             })
         } else {
-                const totalExpense = await Expenses.find({site : id , date : {$gte : finalDate} })
+                const totalExpense = await Expenses.find({site : id , date : {$gte : finalDate , $lte : endDate}  })
 
                 let totalSum = 0;
                 for (let i = 0 ; i !== totalExpense.length ; i++ ){
@@ -164,7 +171,8 @@ const getHistoryOfMealChargesGiven = async (req, res) => {
                     success: true,
                     ExpenseHistory : check,
                     SiteCharges : checkSite,
-                    TotalExpense : totalSum
+                    TotalExpense : totalSum,
+                    message : `Record Shown from ${finalDate} to ${endDate}.`
                 })
             } catch (error) {
                 console.log("Error in getHistoryOfMealChargesGiven and error is : ", error)
@@ -479,8 +487,17 @@ const addExpenseToSiteByManager = async (req, res) => {
 // get  history site meal charges Given to any shop by manager
 const getHistoryOfMealChargesGivenByManager = async (req, res) => {
     const {id,manager} = req.params;
-     const finalDate = cDate.getFullYear() + "-" + (cDate.getMonth() + 1) + "-" + 1;
-    console.log("finalDate : ", finalDate)
+    const {month} = req.body;
+    const cDate = new Date();
+    let endDate = "";
+    const finalDate = cDate.getFullYear() + "-" + month + "-" + 1;
+    if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 31;
+    }else if(month === 2 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 28;
+    }else if(month === 4 || month === 4 || month === 6 || month === 9 || month === 11 ){
+        endDate = cDate.getFullYear() + "-" + month + "-" + 30;
+    }
 
     if (!id ||!manager ) {
         return res.json({
@@ -504,7 +521,7 @@ const getHistoryOfMealChargesGivenByManager = async (req, res) => {
             })
         }
 
-        const check = await Expenses.find({site : id , date : {$gte : finalDate} } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalExpenses : 0 , site : 0 })
+        const check = await Expenses.find({site : id , date : {$gte : finalDate , $lte : endDate} } , {createdAt : 0 , updatedAt : 0 , __v : 0 , totalExpenses : 0 , site : 0 })
         console.log("check : ",check)
         if (check.length < 1) {
             return res.json({
@@ -512,13 +529,14 @@ const getHistoryOfMealChargesGivenByManager = async (req, res) => {
                 message: 'No Expenses Given History Found'
             })
         } else {
-                const totalExpense = await Expenses.find({site : id ,date : {$gte : finalDate} } , {totalExpenses : 1 , _id : 0 })
+                const totalExpense = await Expenses.find({site : id ,date : {$gte : finalDate , $lte : endDate} } , {totalExpenses : 1 , _id : 0 })
             try {
                 res.status(201).json({
                     success: true,
                     ExpenseHistory : check,
                     SiteCharges : checkSite,
-                    TotalExpense : totalExpense
+                    TotalExpense : totalExpense,
+                    message : `Record Shown from ${finalDate} to ${endDate}.`
                 })
             } catch (error) {
                 console.log("Error in getHistoryOfMealChargesGiven and error is : ", error)
