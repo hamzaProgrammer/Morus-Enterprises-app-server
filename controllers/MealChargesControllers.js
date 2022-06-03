@@ -81,17 +81,33 @@ const addNewMealCharge = async (req, res) => {
 
 // getting all meal charges of a date
 const getAllMealChargesOfDate = async (req, res) => {
-    const {id , userDate , site} = req.params;
+    const {id , site, date} = req.params;
 
+    // got date
+    const curentDate = new Date(date);
+    let gotMonth = curentDate.getMonth() + 1;
+    let gotYear = curentDate.getFullYear();
+    
     // curent date
-    const curentDate = new Date(userDate);
-    let sendingDate = curentDate.getFullYear() + "-" + (curentDate.getMonth() + 1) + "-" + curentDate.getDate();
+    let d = new Date();
+    let finDate = 0
 
+    if((curentDate.getMonth() + 1) === 1 || (curentDate.getMonth() + 1) === 3 || (curentDate.getMonth() + 1) === 5 || (curentDate.getMonth() + 1) === 7 || (curentDate.getMonth() + 1) === 8 || (curentDate.getMonth() + 1) === 10 ||  (curentDate.getMonth() + 1) === 12 ){
+        finDate = 31
+    }else if((curentDate.getMonth() + 1) === 2){
+        finDate = 28
+    }else{
+        finDate = 30
+    }
 
-    let finalGotDate = curentDate.getFullYear() + "-" + curentDate.getMonth() + "-" + curentDate.getDate() ;
-    let message = `Record shown is from ${finalGotDate} to ${sendingDate} and having differnce of 30 Days.`;
+    if((d.getMonth() + 1) === (gotMonth + 1)){
+        finDate = d.getDate();
+    }
+    // curent date
+    let sendingDate = gotYear + "-" + gotMonth  + "-" +finDate;
+    let finalGotDate = gotYear + "-" + gotMonth  + "-" + 1;
 
-    console.log("lesserr date : ", finalGotDate , "cuurent : ", sendingDate)
+    let message = `Record shown is from ${finalGotDate} to ${sendingDate}.`;
 
     const checkSite = await Sites.findById(site);
     if(!checkSite){
@@ -118,7 +134,6 @@ const getAllMealChargesOfDate = async (req, res) => {
                     $lte: sendingDate
                 },
             } , {_id : 1 , date : 1 , mealCharge : 1 });
-            console.log("allMealCharges : ",allMealCharges)
 
             return res.json({
                 AllMealCharges :allMealCharges,

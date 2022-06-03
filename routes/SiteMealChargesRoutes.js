@@ -15,7 +15,7 @@ const {
 router.post('/api/sitesMealCharges/addNew/:id/:owner', addExpenseToSite)
 
 // getting history of meal charges given to a site
-router.get('/api/sitesMealChargesRegisters/getMealChargeshHistoryOfASite/:id', getHistoryOfMealChargesGiven)
+router.put('/api/sitesMealChargesRegisters/getMealChargeshHistoryOfASite/:id', getHistoryOfMealChargesGiven)
 
 // updating cash of site
 router.put('/api/sitesMealRegisters/updateExpenseOfSite/:id/:owner', updateExpenseOfSite)

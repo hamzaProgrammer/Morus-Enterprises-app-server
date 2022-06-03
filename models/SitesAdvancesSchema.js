@@ -11,7 +11,6 @@ const SiteAdvanceSchema = new mongoose.Schema({
     },
     picture: {
         type: String,
-        required: true,
     },
     worker: {
         type : mongoose.Types.ObjectId,

@@ -125,16 +125,16 @@ const updateCashOfSite = async (req, res) => {
 // get  history Cash Given to any shop
 const getHistoryOfCashGiven = async (req, res) => {
     const {id,owner} = req.params;
-    const {month} = req.body;
+    const {month, year} = req.body;
     const cDate = new Date();
     let endDate = "";
-    const finalDate = cDate.getFullYear() + "-" + month + "-" + 1;
+    const finalDate = year + "-" + month + "-" + 1;
     if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12 ){
-        endDate = cDate.getFullYear() + "-" + month + "-" + 31;
+        endDate = year + "-" + month + "-" + 31;
     }else if(month === 2 ){
-        endDate = cDate.getFullYear() + "-" + month + "-" + 28;
+        endDate = year + "-" + month + "-" + 28;
     }else if(month === 4 || month === 4 || month === 6 || month === 9 || month === 11 ){
-        endDate = cDate.getFullYear() + "-" + month + "-" + 30;
+        endDate = year + "-" + month + "-" + 30;
     }
 
 
@@ -185,16 +185,16 @@ const getHistoryOfCashGiven = async (req, res) => {
 // get  history Cash Given to any shop
 const getHistoryOfCashGivenByManager = async (req, res) => {
     const {id,manager } = req.params;
-    const {month} = req.body;
+    const {month, year} = req.body;
     const cDate = new Date();
     let endDate = "";
-    const finalDate = cDate.getFullYear() + "-" + month + "-" + 1;
+    const finalDate = year + "-" + month + "-" + 1;
     if(month === 1 || month === 3 || month === 5 || month === 7 || month === 8 || month === 10 || month === 12 ){
-        endDate = cDate.getFullYear() + "-" + month + "-" + 31;
+        endDate = year + "-" + month + "-" + 31;
     }else if(month === 2 ){
-        endDate = cDate.getFullYear() + "-" + month + "-" + 28;
+        endDate = year + "-" + month + "-" + 28;
     }else if(month === 4 || month === 4 || month === 6 || month === 9 || month === 11 ){
-        endDate = cDate.getFullYear() + "-" + month + "-" + 30;
+        endDate = year + "-" + month + "-" + 30;
     }
 
     if (!id ||!manager) {

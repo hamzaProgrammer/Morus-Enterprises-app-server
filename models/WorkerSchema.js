@@ -20,6 +20,7 @@ const WorkersSchema = new mongoose.Schema({
     paymentType: {
         type: String,
         required: true,
+        enum : ['daily wage', 'monthly', 'weekly']
     },
     salary: {
         type: Number,
@@ -36,6 +37,22 @@ const WorkersSchema = new mongoose.Schema({
     date: {
         type: Date,
         required: true,
+    },
+    paidOn: {
+        type: String,
+        default : '',
+    },
+    isPaid: {
+        type: Boolean,
+        default : 'false',
+    },
+    lastActive: {
+        type: String,
+        default : ''
+    },
+    lastActiveMonthYear: {
+        type: String,
+        default : ''
     },
     accountNo: {
         type: Number,
@@ -68,6 +85,10 @@ const WorkersSchema = new mongoose.Schema({
         type: Boolean,
         default : 'true'
     },
+    lastPaidDate: {
+        type: String,
+        default : ''
+    }
 }, {
     timestamps: true
 });

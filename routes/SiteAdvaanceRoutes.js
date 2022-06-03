@@ -21,10 +21,10 @@ const upload = multer({
 
 
 // add new  site advance
-router.post('/api/siteAdvances/addNew', upload.single("picture") , addNewSiteAdvance)
+router.post('/api/siteAdvances/addNew', addNewSiteAdvance)
 
 // getting all attedences of workers all workers of yesterday
-router.get('/api/siteAdvances/getAllSiteAdvancesofAWorkerofSpecificDate/:id/:userDate/:site', getAllSiteAdvanceOfDate)
+router.get('/api/siteAdvances/getAllSiteAdvancesofAWorkerofSpecificDate/:id/:site/:date', getAllSiteAdvanceOfDate)
 
 // add new  site advance by manager
 router.post('/api/siteAdvancesByManager/addNew', upload.single("picture") , addNewSiteAdvanceByManager)

@@ -19,7 +19,8 @@ app.use(bodyParser.urlencoded({
 }))
 app.use(cors())
 
-app.use(express.static('public'));
+
+app.use(express.json())
 
 app.use('/siteAdvancePics', express.static('siteAdvancePics'));
 
@@ -37,6 +38,7 @@ app.use(require('./routes/MealChargesRoutes'))
 app.use(require('./routes/AgentRoutes'))
 app.use(require('./routes/SiteCashRegisterRoutes'))
 app.use(require('./routes/SiteMealChargesRoutes'))
+app.use(require('./routes/ReportsRoutes'))
 
 
 
