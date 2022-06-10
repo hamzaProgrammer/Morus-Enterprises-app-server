@@ -82,7 +82,7 @@ router.put('/api/workers/generateReportOfCrntMonth/:id/:date', generateReportOfW
 router.put('/api/workers/changeRateOfWorker/:id', changeRateOfWorker)
 
 // change rate of worker
-router.put('/api/workers/changeRateOfWorkerWithoutHomeAdv/:id', generateReportOfWorkerWidthoutHomeAdv)
+router.put('/api/workers/changeRateOfWorkerWithoutHomeAdv/:id/:date', generateReportOfWorkerWidthoutHomeAdv)
 
 // getting home advance of worker
 router.get('/api/workers/getHomeAdvanceOfWorker/:id', getHomeAdvance)

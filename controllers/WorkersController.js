@@ -755,18 +755,18 @@ const generateReportOfWorker = async (req, res) => {
 
 // report of worker or current date without home advance
 const generateReportOfWorkerWidthoutHomeAdv = async (req, res) => {
-    const {id} = req.params;
+    const {id, date} = req.params;
     const {travelAllownce} = req.body;
 
     let hourRate = 0;
 
     // got date
-    const newGotDate = new Date();
+    const newGotDate = new Date(date);
     let gotMonth = newGotDate.getMonth() + 1;
     let gotYear = newGotDate.getFullYear();
 
     // curent date
-    let d = new Date();
+    let d = new Date(date);
     let finDate = 0
 
     if((newGotDate.getMonth() + 1) === 1 || (newGotDate.getMonth() + 1) === 3 || (newGotDate.getMonth() + 1) === 5 || (newGotDate.getMonth() + 1) === 7 || (newGotDate.getMonth() + 1) === 8 || (newGotDate.getMonth() + 1) === 10 ||  (newGotDate.getMonth() + 1) === 12 ){
@@ -787,7 +787,7 @@ const generateReportOfWorkerWidthoutHomeAdv = async (req, res) => {
     const dateArray = finalDate.split("-");
 
 
-    if (!id) {
+    if (!id || !date) {
         return res.json({
             success: false,
             message: "Please Id of Worker"
@@ -909,12 +909,12 @@ const generateReportOfWorkerOfCrntMonth = async (req, res) => {
 
     let hourRate = 0;
     // got date
-    const newGotDate = new Date();
+    const newGotDate = new Date(date);
     let gotMonth = newGotDate.getMonth() + 1;
     let gotYear = newGotDate.getFullYear();
 
     // curent date
-    let d = new Date();
+    let d = new Date(date);
     let finDate = 0
 
     if((newGotDate.getMonth() + 1) === 1 || (newGotDate.getMonth() + 1) === 3 || (newGotDate.getMonth() + 1) === 5 || (newGotDate.getMonth() + 1) === 7 || (newGotDate.getMonth() + 1) === 8 || (newGotDate.getMonth() + 1) === 10 ||  (newGotDate.getMonth() + 1) === 12 ){

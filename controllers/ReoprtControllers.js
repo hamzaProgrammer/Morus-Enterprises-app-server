@@ -1,10 +1,11 @@
 const Reports = require('../models/ReportSchema')
 const Workers = require('../models/WorkerSchema')
+const Sites = require('../models/SitesSchema')
 
 // add new report
 const addNewReport = async (req, res) => {
-    const { name , dateStart , dateEnd , presentDays , overTime , rate , grossWage , deductions , homeAdvances , allowances  , netWage } = req.body;
-    if (!name || !dateStart || !dateEnd || !presentDays || !overTime || !rate || !grossWage || !deductions  || !netWage) {
+    const { name , dateStart , dateEnd , presentDays , overTime , rate , grossWage , deductions , homeAdvances , allowances  , site ,  netWage } = req.body;
+    if (!name || !dateStart || !dateEnd || !presentDays || !overTime || !rate || !grossWage || !deductions  || !netWage || !site) {
         return res.json({
             success: false,
             message: "Please fill All required credentials"
@@ -15,6 +16,14 @@ const addNewReport = async (req, res) => {
             return res.json({
                 success: false,
                 message: "Worker Not Found with Provided Name"
+            });
+        }
+
+        const isSite = await Sites.findOne({site : site});
+        if(!isSite){
+            return res.json({
+                success: false,
+                message: "Site Not Found with Provided Name"
             });
         }
 
@@ -39,14 +48,21 @@ const addNewReport = async (req, res) => {
 
 // get all reports of a month
 const getReportsOfSpecMonth = async (req, res) => {
-    const {startDate , endDate } = req.params
+    const {startDate , endDate , site } = req.params
 
         if(!startDate  || !endDate){
             return res.json({success: false , message : "Please fill Required Credientials"})
         }else {
             try {
-                const isReports = await Reports.find({dateStart: startDate , dateEnd : endDate }, {name :1 , dateStart : 1 , dateEnd : 1 });
+                const isSite = await Sites.findOne({site : site});
+                if(!isSite){
+                    return res.json({
+                        success: false,
+                        message: "Site Not Found with Provided Name"
+                    });
+                }
 
+                const isReports = await Reports.find({dateStart : {$gte : startDate} , dateEnd : {$lte : endDate} , site : site }, {name :1 , dateStart : 1 , dateEnd : 1 });
                 if(isReports.length < 1){
                     return res.json({success: false ,  message: "No Reports Found in Date Range"})
                 }
@@ -68,21 +84,29 @@ const getReportsOfSpecMonth = async (req, res) => {
 
 // get all reports of a workers unpaid in given month
 const getUnPaidReportsOfSpecMonth = async (req, res) => {
-    const {startDate , endDate } = req.params
+    const {startDate , endDate , site } = req.params
 
     if(!startDate  || !endDate){
         return res.json({success: false , message : "Please fill Required Credientials"})
     }else {
         try {
+            const isSite = await Sites.findOne({site : site});
+            if(!isSite){
+                return res.json({
+                    success: false,
+                    message: "Site Not Found with Provided Name"
+                });
+            }
+
             // getting all workers
-            const allWorkers = await Workers.find();
+            const allWorkers = await Workers.find({site : site});
             if(!allWorkers){
                 return res.json({success: false , message : "Could Not Get All Workers"})
             }
 
             let allUnPaid = []
             for(let i = 0; i !== allWorkers.length; i++){
-                const checkReport = await Reports.findOne({workerId : allWorkers[i]._id , dateStart: startDate , dateEnd : endDate});
+                const checkReport = await Reports.findOne({workerId : allWorkers[i]._id , dateStart : {$gte : startDate} , dateEnd : {$lte : endDate} , site : site});
                 if(!checkReport){
                     let newObj = {
                         Id : allWorkers[i]._id,

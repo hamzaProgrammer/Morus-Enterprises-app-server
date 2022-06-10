@@ -9,6 +9,10 @@ const ReportSchema = new mongoose.Schema({
         type : mongoose.Types.ObjectId,
         ref : 'moruenterprisesworkers'
     },
+    site: {
+        type : mongoose.Types.ObjectId,
+        ref : 'moruenterprisessites'
+    },
     dateStart: {
         type: String,
         required: true,
