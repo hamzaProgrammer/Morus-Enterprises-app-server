@@ -1052,6 +1052,154 @@ const generateReportOfWorkerOfCrntMonth = async (req, res) => {
     }
 }
 
+// report of worker of current month with home advance
+const generateReportOfWorkerOfCrntMonthWithAdvance = async (req, res) => {
+    const {id, date} = req.params;
+
+    let hourRate = 0;
+    // got date
+    const newGotDate = new Date(date);
+    let gotMonth = newGotDate.getMonth() + 1;
+    let gotYear = newGotDate.getFullYear();
+
+    // curent date
+    let d = new Date(date);
+    let finDate = 0
+
+    if((newGotDate.getMonth() + 1) === 1 || (newGotDate.getMonth() + 1) === 3 || (newGotDate.getMonth() + 1) === 5 || (newGotDate.getMonth() + 1) === 7 || (newGotDate.getMonth() + 1) === 8 || (newGotDate.getMonth() + 1) === 10 ||  (newGotDate.getMonth() + 1) === 12 ){
+        finDate = 31
+    }else if((newGotDate.getMonth() + 1) === 2){
+        finDate = 28
+    }else{
+        finDate = 30
+    }
+
+    if((d.getMonth() + 1) === (gotMonth + 1)){
+        finDate = d.getDate();
+    }
+    // curent date
+    let finalDate = gotYear + "-" + gotMonth  + "-" + finDate;
+    let initialDate = gotYear + "-" + gotMonth  + "-" + 1;
+
+    const dateArray = finalDate.split("-");
+
+    if (!id) {
+        return res.json({
+            success: false,
+            message: "Please Provide all Crededentials"
+        });
+    } else {
+        let checkWorker = await Workers.findById(id);
+        if(!checkWorker){
+            return res.json({
+                success: false,
+                message: 'Worker Not Found'
+            })
+        }else {
+                try {
+                    console.log("checkWorker.activeStatus: ", checkWorker.activeStatus)
+                    if(checkWorker.activeStatus === false){
+                        return res.json({
+                            success: false,
+                            message: 'This is Worker Is Not Currently Active At Any Site'
+                        })
+                    }
+
+                    let grossWage = 0;
+                    if(checkWorker.paymentType === "monthly"){
+                        let oneDateRate = (checkWorker.salary / 30)
+                        hourRate = (oneDateRate/8)
+                    }else if(checkWorker.paymentType === "daily wage"){
+                        let oneDateRate = (checkWorker.salary / 1)
+                        hourRate =(oneDateRate/8)
+                    }
+                    console.log("hourRate : ", hourRate)
+
+                    // calculating overtime
+                    const allOverTime = await Attendences.find({date : {$gte : initialDate , $lte : finalDate} , worker : id});
+                    let overTime = 0, noOfPresentDays = 0;
+                    let lastOne = null, secRec = null;
+                    for(let i = 0; i !== allOverTime.length; i++){
+                        if(allOverTime[i].isPresent === true){
+                            noOfPresentDays = noOfPresentDays + 1
+                            secRec = allOverTime[0].date
+                            lastOne = allOverTime[i].date;
+                            overTime += Number(allOverTime[i].overTime * hourRate);
+                            console.log("overTime : ", overTime, "allOverTime[i].overTime : ", allOverTime[i].overTime, "hourRate : ", hourRate)
+                        }
+                    }
+
+                    console.log("grossWage : ", grossWage)
+
+                    if(noOfPresentDays === 0){
+                        noOfPresentDays = 1;
+                    }
+
+                    if(checkWorker.paymentType === "monthly"){
+                        grossWage = (noOfPresentDays * (checkWorker.salary / 30))
+                    }else if(checkWorker.paymentType === "daily wage"){
+                        grossWage = (noOfPresentDays * checkWorker.salary);
+                    }
+
+                    console.log("noOfPresentDays : ",noOfPresentDays)
+
+                    if(noOfPresentDays === 0){
+                        return res.json({
+                            success: false,
+                            message: 'This Worker has no Active Days'
+                        })
+                    }
+
+                    console.log("last attendence was made on : ", lastOne)
+
+                    // calculating site advance
+                    const allSiteAdvances = await SiteAdvance.find({date : {$gte :initialDate , $lte : finalDate} , worker : id});
+                    let siteAdvance = 0;
+                    for(let i = 0; i !== allSiteAdvances.length; i++){
+                        siteAdvance += Number(allSiteAdvances[i].siteAdvance);
+                    }
+
+                    // calculating meal charges
+                    const mealAllCharges = await MealCharges.find({date : {$gte : initialDate , $lte : finalDate} , worker : id});
+                    let mealCharges = 0;
+                    for(let i = 0; i !== mealAllCharges.length; i++){
+                        mealCharges += Number(mealAllCharges[i].mealCharge);
+                    }
+
+                    const deductions =  siteAdvance + mealCharges;
+
+                    let netWage = Number(grossWage) - (deductions) + Number(checkWorker.homeAdvance) ;
+                    netWage = Number(netWage)  + Number(overTime)
+
+                    // marking as went home now
+                    checkWorker.lastPaidDate = finalDate;
+                    await Workers.findByIdAndUpdate(id, {$set : {...checkWorker}}, {new : true});
+
+                    return res.status(201).json({
+                        success: true,
+                        Name : checkWorker.name,
+                        Date : `${initialDate} - to - ${finalDate}`,
+                        PresentDays : noOfPresentDays,
+                        HomeAdvance : checkWorker.homeAdvance,
+                        OverTime : overTime,
+                        Rate : checkWorker.salary,
+                        GrossWage : grossWage,
+                        Deductions : deductions,
+                        Allowences : overTime,
+                        NetWage : netWage,
+                    })
+
+                } catch (error) {
+                    console.log("Error in generateReportOfWorkerOfCrntMonth and error is : ", error)
+                    res.status(201).json({
+                        success: false,
+                        error : "Could Not Perform Action"
+                    })
+                }
+        }
+    }
+}
+
 // change rate  of worker
 const changeRateOfWorker = async (req, res) => {
     const {id} = req.params;
@@ -1353,5 +1501,6 @@ module.exports = {
     generateReportOfWorkerWidthoutHomeAdv,
     changeActiveStatusOnPaying,
     markeWorkerHomeAdvance,
-    markWorkerAsPaid
+    markWorkerAsPaid,
+    generateReportOfWorkerOfCrntMonthWithAdvance
 }

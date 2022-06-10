@@ -22,7 +22,8 @@ const {
     generateReportOfWorkerWidthoutHomeAdv,
     changeActiveStatusOnPaying,
     markeWorkerHomeAdvance,
-    markWorkerAsPaid
+    markWorkerAsPaid,
+    generateReportOfWorkerOfCrntMonthWithAdvance
 } = require('../controllers/WorkersController')
 const multer = require("multer")
 var storage = multer.diskStorage({
@@ -78,6 +79,9 @@ router.put('/api/workers/generateReport/:id', generateReportOfWorker)
 // generate report of a worker of specific date only
 router.put('/api/workers/generateReportOfCrntMonth/:id/:date', generateReportOfWorkerOfCrntMonth)
 
+// generate report of a worker of specific date only with home advance
+router.put('/api/workers/generateReportOfCrntMonthWithHomeAdvance/:id/:date', generateReportOfWorkerOfCrntMonthWithAdvance)
+
 // change rate of worker
 router.put('/api/workers/changeRateOfWorker/:id', changeRateOfWorker)
 
@@ -104,5 +108,7 @@ router.put('/api/workers/markWorkerHomeAdv/:id', markeWorkerHomeAdvance)
 
 // mark worker as paid
 router.put('/api/workers/markWorkerAsPaid/:id', markWorkerAsPaid)
+
+
 
 module.exports = router;
